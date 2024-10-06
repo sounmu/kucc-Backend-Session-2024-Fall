@@ -1,22 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from schemas import RequestCreateUser, ResponseUser
 from database import users_db
 
 router = APIRouter(
     prefix="/register"
 )
 
-class User(BaseModel):
-    id: int | None
-    email: str
-    username: str
-    password: str
-
 @router.post(
     "/"
 )
 def create_user(
-    user: User,
+    user: RequestCreateUser,
 ):
     for existing_user in users_db:
         if existing_user["email"] == user.email:
@@ -31,8 +25,22 @@ def create_user(
     "/users"
 )
 def get_users():
-    return users_db
-
+    result = [
+        ResponseUser(
+            id=user['id'],
+            email=user['email'],
+            username=user['username']
+        ) for user in users_db
+    ] 
+    #또는 
+    """
+    result = [
+        ResponseUser(
+            **user
+        ) for user in users_db
+    ]
+    """
+    return result
 
 
 
