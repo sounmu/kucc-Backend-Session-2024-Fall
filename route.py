@@ -17,8 +17,8 @@ def create_user(
     request: RequestCreateUser,
     db: Session = Depends(get_db)
 ):  
-    user = crud_create_user(request, db)
-    return user
+    result = crud_create_user(request, db)
+    return result
 
 @router.get(
     "/users",

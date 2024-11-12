@@ -12,6 +12,5 @@ class ResponseUser(BaseModel):
     email: EmailStr
     user_name: str = Field(min_length=2, max_length=20)
 
-
 class ReqeustUpdateUser(BaseModel):
     pass
