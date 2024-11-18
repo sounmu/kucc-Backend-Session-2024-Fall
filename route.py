@@ -1,47 +1,55 @@
-from fastapi import APIRouter, HTTPException
-from schemas import RequestCreateUser, ResponseUser
-from database import users_db
+from fastapi import APIRouter, Depends
+from schemas import RequestCreateUser, ResponseUser, Token, UserLogin, RequestUpdateUser
+from sqlalchemy.orm import Session
+from database import get_db
+from crud import crud_create_user, crud_update_user, crud_login_user
+from dependency import get_current_user
+
 
 router = APIRouter(
-    prefix="/register"
+    prefix="/auth"
 )
 
 @router.post(
-    "/"
+    "/",
+    response_model=ResponseUser
 )
 def create_user(
-    user: RequestCreateUser,
-):
-    for existing_user in users_db:
-        if existing_user["email"] == user.email:
-            raise HTTPException(status_code=400, detail="Email already exitst")
-
-    user.id = len(users_db) + 1
-    users_db.append(user.model_dump())
-    
-    return {"message": "User registered successfully"}
+    request: RequestCreateUser,
+    db: Session = Depends(get_db)
+):  
+    result = crud_create_user(request, db)
+    return result
 
 @router.get(
-    "/users"
+    "/users",
+    # response_model= ???
 )
 def get_users():
-    result = [
-        ResponseUser(
-            id=user['id'],
-            email=user['email'],
-            username=user['username']
-        ) for user in users_db
-    ] 
-    #또는 
-    """
-    result = [
-        ResponseUser(
-            **user
-        ) for user in users_db
-    ]
-    """
+    pass
+
+
+@router.put(
+    "/update-user-name",
+)
+def update_user(
+    request: RequestUpdateUser,
+    current_user_id: int = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    result = crud_update_user(current_user_id, request, db)
     return result
 
 
 
+@router.post(
+    "/login", response_model=Token
+)
+def login(
+    request: UserLogin,
+    db: Session = Depends(get_db)
+):
+    result = crud_login_user(request, db)
 
+    return result
+    
